@@ -15,7 +15,7 @@ The base image is immutable. Motion is produced by deterministic overlays so bui
 6. Export pipeline for WebM/MP4/GIF.
 
 ## Development stages
-### DEV-001 — Interactive base editor [IN PROGRESS]
+### DEV-001 — Interactive base editor [COMPLETE]
 Evidence of completion:
 - Browser app loads without build tooling.
 - User can load a local PNG/JPG as the fixed background.
@@ -23,11 +23,12 @@ Evidence of completion:
 - Routes can be blue or gold, renamed, undone, deleted and saved to JSON.
 - Preview mode animates flow without changing the background.
 
-### DEV-002 — Flow rendering
-- Multi-pass glow around paths.
-- Moving light packets/particles rather than only dashed lines.
-- Direction, speed, width, brightness and phase controls.
-- Multiple independently timed paths.
+### DEV-002 — Flow rendering [IN PROGRESS]
+- [x] Multi-pass glow around paths.
+- [x] Moving light packets/particles rather than only dashed lines.
+- [x] Direction, speed, width and brightness controls.
+- [x] Multiple independently timed paths.
+- [ ] Explicit route phase/start-time control.
 - Seamless deterministic loop.
 
 ### DEV-003 — Reactive scene overlays
