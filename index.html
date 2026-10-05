@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wallpaper Animation Studio</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><strong>Wallpaper Animation Studio</strong><span>Static scene + deterministic animated overlays</span></header>
+<main>
+<section class="stage-wrap">
+<div id="stage">
+<img id="bg" alt="">
+<svg id="overlay" viewBox="0 0 1000 562.5" preserveAspectRatio="none">
+<defs><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g id="paths"></g><polyline id="draft" fill="none"/>
+</svg>
+<div id="empty">Load a base wallpaper to begin</div>
+</div>
+</section>
+<aside>
+<label class="file">Load base image<input id="file" type="file" accept="image/png,image/jpeg"></label>
+<div class="row"><button id="newRoute">New route</button><button id="undo">Undo point</button></div>
+<label>Route name<input id="name" value="Flow 1"></label>
+<label>Colour<select id="colour"><option value="#00b7ff">Electric blue</option><option value="#ffb84a">Warm gold</option></select></label>
+<label>Speed<input id="speed" type="range" min=".2" max="3" step=".1" value="1"></label>
+<label>Width<input id="width" type="range" min="1" max="12" step="1" value="5"></label>
+<div class="row"><button id="finish">Finish route</button><button id="preview">Preview</button></div>
+<h3>Routes</h3><div id="routes"></div>
+<div class="row"><button id="save">Export JSON</button><label class="smallfile">Import JSON<input id="loadProject" type="file" accept=".json"></label></div>
+<p class="hint">Draw by clicking along an existing circuit path. Double-click finishes the route.</p>
+</aside>
+</main>
+<script src="app.js"></script>
+</body></html>
