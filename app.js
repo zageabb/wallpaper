@@ -22,7 +22,7 @@ function draw(){
  $("#triggerRoute").innerHTML=`<option value="">None</option>`+project.routes.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
  renderAt(manualTime);
 }
-function regionWindow(r){if(r.wakeMode==="route"&&Number.isInteger(r.triggerRoute)){const route=project.routes[r.triggerRoute];if(route){const arrival=route.startTime+route.duration*.82;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(1,r.hold||3))]}}return [r.wake,r.sleep]}
+function regionWindow(r){if(r.wakeMode==="route"&&Number.isInteger(r.triggerRoute)){const route=project.routes[r.triggerRoute];if(route){const arrival=route.startTime+route.duration;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(.5,r.hold||3))]}}return [r.wake,r.sleep]}
 function activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
 function renderRegion(g,r,t){
  const [wake,sleep]=regionWindow(r),a=activity(t,wake,sleep);
@@ -39,12 +39,12 @@ function renderRegion(g,r,t){
 }
 function renderAt(t){
  manualTime=((t%project.loopSeconds)+project.loopSeconds)%project.loopSeconds;$("#scrub").value=manualTime;$("#timeOut").textContent=manualTime.toFixed(2)+"s";
- [...group.children].forEach((node,idx)=>{const r=project.routes[Math.floor(idx/3)],kind=idx%3,a=activity(manualTime,r.startTime,r.startTime+r.duration);if(kind===1)node.setAttribute("opacity",a*.12*(r.brightness/100));if(kind===2)node.setAttribute("opacity",a*.72*(r.brightness/100))});
- [...particleGroup.children].forEach(c=>{const r=project.routes[+c.dataset.route],a=activity(manualTime,r.startTime,r.startTime+r.duration),path=group.children[(+c.dataset.route)*3+2],len=path.getTotalLength(),phase=+c.dataset.packet/r.packets;let local=Math.max(0,manualTime-r.startTime),p=((local*r.speed/6)+phase)%1;if(r.reverse)p=1-p;const q=path.getPointAtLength(p*len);c.setAttribute("cx",q.x);c.setAttribute("cy",q.y);c.setAttribute("opacity",a*(r.brightness/100))});
+ [...group.children].forEach((node,idx)=>{const r=project.routes[Math.floor(idx/3)],kind=idx%3,a=activity(manualTime,r.startTime,Math.min(project.loopSeconds-.25,r.startTime+r.duration+.5));if(kind===1)node.setAttribute("opacity",a*.12*(r.brightness/100));if(kind===2)node.setAttribute("opacity",a*.72*(r.brightness/100))});
+ [...particleGroup.children].forEach(c=>{const r=project.routes[+c.dataset.route],path=group.children[(+c.dataset.route)*3+2],len=path.getTotalLength(),elapsed=manualTime-r.startTime,phase=+c.dataset.packet*Math.min(.12,.45/Math.max(1,r.packets-1)),travel=Math.max(.01,r.duration),p=elapsed/travel-phase,visible=p>=0&&p<=1;if(r.reverse)p=1-p;const q=path.getPointAtLength(clamp(p,0,1)*len);c.setAttribute("cx",q.x);c.setAttribute("cy",q.y);c.setAttribute("opacity",visible?(r.brightness/100):0)});
  [...regionGroup.children].forEach((g,i)=>renderRegion(g,project.regions[i],manualTime));
 }
 function animate(t){if(!playing)return;if(!start)start=t-manualTime*1000;renderAt(((t-start)/1000)%project.loopSeconds);raf=requestAnimationFrame(animate)}
-function finish(){if(draft.length<2)return;const startTime=+$("#startTime").value,duration=Math.min(+$("#duration").value,Math.max(.5,project.loopSeconds-.25-startTime));project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,startTime,duration,points:[...draft]});draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()}
+function finish(){if(draft.length<2)return;const tail=.5,minTravel=.5,maxStart=project.loopSeconds-.25-tail-minTravel,startTime=Math.min(+$("#startTime").value,maxStart),duration=Math.min(Math.max(minTravel,+$("#duration").value),project.loopSeconds-.25-tail-startTime);project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,startTime,duration,points:[...draft]});draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()}
 svg.addEventListener("click",e=>{if(regionMode){regionDraft.push(normPoint(e));draw();if(regionDraft.length<4){$("#regionMode").textContent=`Screen corners ${regionDraft.length}/4…`;return}project.regions.push({type:$("#regionType").value,colour:$("#regionColour").value,wakeMode:$("#wakeMode").value,triggerRoute:$("#triggerRoute").value===""?null:+$("#triggerRoute").value,wake:+$("#wakeTime").value,sleep:+$("#sleepTime").value,hold:3,points:[...regionDraft]});regionDraft=[];regionMode=false;$("#regionMode").textContent="Add screen region";draw();return}draft.push(normPoint(e));draw()});
 svg.addEventListener("dblclick",e=>{if(!regionMode){e.preventDefault();finish()}});
 $("#finish").onclick=finish;$("#newRoute").onclick=()=>{draft=[];draw()};$("#undo").onclick=()=>{draft.pop();draw()};
@@ -55,7 +55,7 @@ $("#regionList").onclick=e=>{if(e.target.dataset.rdel!==undefined){project.regio
 $("#scrub").oninput=e=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(+e.target.value)};
 function loopIssues(){
  const issues=[];
- project.routes.forEach((r,i)=>{if(r.startTime<0||r.startTime+r.duration>project.loopSeconds-.25)issues.push(`Route ${i+1} is active at loop boundary`)});
+ project.routes.forEach((r,i)=>{if(r.startTime<0||r.startTime+r.duration+.5>project.loopSeconds-.25)issues.push(`Route ${i+1} is active at loop boundary`)});
  project.regions.forEach((r,i)=>{const w=regionWindow(r);if(w[0]<0||w[1]>project.loopSeconds-.25||w[1]<=w[0])issues.push(`Region ${i+1} has an invalid wake window`)});
  return issues;
 }
