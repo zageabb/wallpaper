@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s),stage=$("#stage"),svg=$("#overlay"),bg=$("#bg"),group=$("#paths"),regionGroup=$("#regions"),particleGroup=$("#particles");
 let project={version:5,background:null,loopSeconds:15,routes:[],regions:[],pulses:[]},draft=[],playing=false,raf=0,start=0,regionMode=false,regionDraft=[],pulseMode=false,manualTime=0;
-const NS="http://www.w3.org/2000/svg", clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), safeId=()=>globalThis.crypto?.randomUUID?.()||`id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+const NS="http://www.w3.org/2000/svg", clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), safeId=()=>globalThis.crypto?.randomUUID?.()||`id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, STORAGE_KEY="wallpaper-animation-studio-v1";
 const normPoint=e=>{const r=svg.getBoundingClientRect();return [clamp((e.clientX-r.left)/r.width,0,1),clamp((e.clientY-r.top)/r.height,0,1)]};
 const svgPts=pts=>pts.map(([x,y])=>`${x*1000},${y*562.5}`).join(" ");
 const regionPoints=r=>r.points||(r.box?[[r.box[0],r.box[1]],[r.box[0]+r.box[2],r.box[1]],[r.box[0]+r.box[2],r.box[1]+r.box[3]],[r.box[0],r.box[1]+r.box[3]]]:[]);
@@ -9,6 +9,7 @@ const quadSvg=(r,uvs)=>uvs.map(([u,v])=>quadPoint(r,u,v).join(",")).join(" ");
 const ringPts=(r,cx,cy,rx,ry,n=40)=>Array.from({length:n+1},(_,i)=>{const a=i/n*Math.PI*2;return quadPoint(r,cx+Math.cos(a)*rx,cy+Math.sin(a)*ry)});
 const el=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n};
 function routePath(r,cls,width,opacity=1){return el("polyline",{points:svgPts(r.points),class:cls,stroke:r.colour,"stroke-width":width,opacity})}
+function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...project,background:null}))}catch(e){console.warn("Autosave unavailable",e)}}
 function draw(){
  group.innerHTML="";regionGroup.innerHTML="";particleGroup.innerHTML="";
  project.routes.forEach((r,i)=>{
@@ -22,7 +23,7 @@ function draw(){
  $("#regionList").innerHTML=project.regions.map((r,i)=>{const w=regionWindow(r);return `<div class="region-item"><span>${r.type}<small>${r.wakeMode==="route"?"route arrival":"timeline"} · ${w[0].toFixed(1)}s–${w[1].toFixed(1)}s</small></span><button data-rdel="${i}">×</button></div>`}).join("");
  $("#pulseList").innerHTML=(project.pulses||[]).map((p,i)=>`<div class="region-item"><span>Pulse ${i+1}<small>${p.start.toFixed(1)}s–${p.end.toFixed(1)}s</small></span><button data-pdel="${i}">×</button></div>`).join("");
  $("#triggerRoute").innerHTML=`<option value="">None</option>`+project.routes.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
- renderAt(manualTime);
+ renderAt(manualTime);persist();
 }
 function regionWindow(r){if(r.wakeMode==="route"){const route=project.routes.find(x=>x.id===r.triggerRouteId);if(route){const arrival=route.startTime+route.duration;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(.5,r.hold||3))]}}return [r.wake,r.sleep]}
 function activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
@@ -69,10 +70,11 @@ function loopIssues(){
 $("#verifyLoop").onclick=()=>{const issues=loopIssues(),s=$("#loopStatus");s.className="status "+(issues.length?"bad":"ok");s.textContent=issues.length?issues.join(" · "):"Verified: all configured activity is dormant before 15.00s";renderAt(0)};
 $("#resetTime").onclick=()=>renderAt(0);
 const step=d=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(manualTime+d/30)};$("#stepBack").onclick=()=>step(-1);$("#stepForward").onclick=()=>step(1);
-$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{project.background=rd.result;bg.src=rd.result;$("#empty").style.display="none"};rd.readAsDataURL(f)};
+$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{project.background=rd.result;bg.src=rd.result;$("#empty").style.display="none";persist()};rd.readAsDataURL(f)};
 [["speed","speedOut",v=>(+v).toFixed(1)+"×"],["width","widthOut",v=>v],["brightness","brightnessOut",v=>v+"%"],["packetsCount","packetsOut",v=>v],["startTime","startOut",v=>(+v).toFixed(1)+"s"],["duration","durationOut",v=>(+v).toFixed(1)+"s"],["wakeTime","wakeOut",v=>(+v).toFixed(1)+"s"],["sleepTime","sleepOut",v=>(+v).toFixed(1)+"s"],["pulseStart","pulseStartOut",v=>(+v).toFixed(1)+"s"],["pulseEnd","pulseEndOut",v=>(+v).toFixed(1)+"s"],["pulseRadius","pulseRadiusOut",v=>v]].forEach(([id,out,fmt])=>$("#"+id).oninput=e=>$("#"+out).value=fmt(e.target.value));
 $("#save").onclick=()=>{const clean={...project,background:null};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(clean,null,2)],{type:"application/json"}));a.download="wallpaper-project.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $("#loadProject").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const p=JSON.parse(rd.result);const routes=(p.routes||[]).map(r=>({brightness:80,packets:4,reverse:false,startTime:0,duration:6,...r,id:r.id||safeId()}));
 const regions=(p.regions||[]).map(r=>{const legacyRoute=Number.isInteger(r.triggerRoute)?routes[r.triggerRoute]:null;return {wakeMode:"time",triggerRouteId:null,hold:3,...r,id:r.id||safeId(),triggerRouteId:r.triggerRouteId||legacyRoute?.id||null,points:r.points||regionPoints(r)}});
 const pulses=(p.pulses||[]).map(x=>({colour:"#00b7ff",start:2,end:8,radius:28,...x,id:x.id||safeId()}));project={...project,...p,background:project.background,routes,regions,pulses,version:5};draw()};rd.readAsText(f)};
-draw();
+function restoreAutosave(){try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return;const p=JSON.parse(raw),routes=(p.routes||[]).map(r=>({...r,id:r.id||safeId()})),regions=(p.regions||[]).map(r=>({...r,id:r.id||safeId(),points:r.points||regionPoints(r)})),pulses=(p.pulses||[]).map(x=>({...x,id:x.id||safeId()}));project={...project,...p,background:null,routes,regions,pulses,version:5};$("#loopStatus").textContent="Recovered local autosave — reload dormant master image";}catch(e){console.warn("Autosave recovery failed",e)}}
+restoreAutosave();draw();
