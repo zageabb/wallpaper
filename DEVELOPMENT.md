@@ -28,24 +28,24 @@ Evidence of completion:
 - [x] Moving light packets/particles rather than only dashed lines.
 - [x] Direction, speed, width and brightness controls.
 - [x] Multiple independently timed paths.
-- [ ] Explicit route phase/start-time control.
-- Seamless deterministic loop.
+- [x] Explicit route phase/start-time control.
+- [x] Seamless deterministic 15-second preview loop.
 
-### DEV-003 — Reactive scene overlays
-- Region editor to register dormant screen/panel bounds.
+### DEV-003 — Reactive scene overlays [IN PROGRESS]
+- [x] Region editor to register dormant screen/panel bounds.
 - Define pulse points by clicking the image.
 - AI/network node pulses.
-- Dashboard/KPI overlay regions.
-- Build active information entirely as overlays rather than relying on information baked into the base.
-- Bar, line, area, donut, numeric KPI and map-hotspot renderers.
-- Per-overlay opacity/brightness and wake/sleep transitions.
+- [x] Dashboard/KPI overlay regions.
+- [x] Build active information entirely as overlays rather than relying on information baked into the base.
+- [x] Initial bar, line and numeric KPI renderers.\n- [ ] Area, donut and map-hotspot renderers.
+- [x] Per-overlay wake/sleep transitions.
 - Trigger overlays when a flow reaches a destination.
-- Return overlays to the exact dormant state before the loop boundary.
+- [x] Return configured overlays to dormant state before the loop boundary.
 
 ### DEV-004 — Timeline
-- 15-second default loop.
+- [x] 15-second default loop.
 - Sequence editor for document → system → analytics → AI → return.
-- Scrubber, pause, frame stepping and loop-boundary verification.
+- [x] Scrubber and pause.\n- [ ] Frame stepping and loop-boundary verification.
 
 ### DEV-005 — Export
 - Browser recording to WebM.
