@@ -21,6 +21,7 @@ Evidence of completion:
 - User can load a local PNG/JPG as the fixed background.
 - Click-to-place SVG route editor.
 - Routes can be blue or gold, renamed, undone, deleted and saved to JSON.
+- Existing routes can be reopened for editing; control points can be dragged or individually deleted.
 - Preview mode animates flow without changing the background.
 
 ### DEV-002 — Flow rendering [COMPLETE]
@@ -35,7 +36,7 @@ Evidence of completion:
 
 ### DEV-003 — Reactive scene overlays [IN PROGRESS]
 - [x] Four-corner perspective region editor to register dormant screen/panel surfaces.
-- [ ] Define standalone pulse points by clicking the image.
+- [x] Define standalone pulse points by clicking the image.
 - [x] AI/network region pulses.
 - [x] Dashboard/KPI overlay regions.
 - [x] Build active information entirely as overlays rather than relying on information baked into the base.
@@ -61,16 +62,16 @@ Evidence of completion:
 - Preserve source resolution/aspect ratio.
 
 ### DEV-006 — Usability
-- Project JSON import/export.
-- Autosave in browser storage.
-- Route visibility/lock controls.
-- Background dimming preview.
-- Presets for subtle Teams wallpaper animation.
+- [x] Project JSON import/export.
+- [x] Autosave in browser storage.
+- [ ] Route visibility/lock controls.
+- [ ] Background dimming preview.
+- [ ] Presets for subtle Teams wallpaper animation.
 
 ## Current testing milestone
 The editor is approaching its first manual testing milestone. Before declaring it ready, complete the remaining high-value editor work needed to exercise the deterministic overlay model end-to-end:
-- [ ] Standalone pulse-point editor.
-- [ ] Autosave/recovery for local projects.
+- [x] Standalone pulse-point editor.
+- [x] Autosave/recovery for local projects.
 - [ ] Route visibility/lock controls if required for practical tracing.
 - [ ] Manual browser test of perspective screens, route-triggered wake-up, scrub/frame-step, loop verification and JSON round-trip.
 - [ ] Record first-test instructions and known limitations; video export is not required for the first interactive test milestone.
@@ -100,3 +101,7 @@ A successful output has no camera movement, no geometry morphing, no AI-redrawn 
 - Causal route arrival and loop-boundary timing implemented.
 - Stable route/region IDs and legacy JSON migration implemented.
 - Validation hardening implemented in `500a8b3`; GitHub Actions run `37320210773` completed successfully.
+
+
+## Development workflow rule
+Before starting each new development item, update this `DEVELOPMENT.md` first so the intended change, scope and acceptance/evidence target are recorded before implementation begins. After implementation, update the same item with completion status and verification evidence. Do not begin the next development item until the documentation reflects the current state.
