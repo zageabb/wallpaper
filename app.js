@@ -49,6 +49,14 @@ $("#preview").onclick=()=>{playing=!playing;stage.classList.toggle("playing",pla
 $("#routes").onclick=e=>{if(e.target.dataset.del!==undefined){project.routes.splice(+e.target.dataset.del,1);draw()}};
 $("#regionList").onclick=e=>{if(e.target.dataset.rdel!==undefined){project.regions.splice(+e.target.dataset.rdel,1);draw()}};
 $("#scrub").oninput=e=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(+e.target.value)};
+function loopIssues(){
+ const issues=[];
+ project.routes.forEach((r,i)=>{if(r.startTime<0||r.startTime+r.duration>project.loopSeconds-.25)issues.push(`Route ${i+1} is active at loop boundary`)});
+ project.regions.forEach((r,i)=>{const w=regionWindow(r);if(w[0]<0||w[1]>project.loopSeconds-.25||w[1]<=w[0])issues.push(`Region ${i+1} has an invalid wake window`)});
+ return issues;
+}
+$("#verifyLoop").onclick=()=>{const issues=loopIssues(),s=$("#loopStatus");s.className="status "+(issues.length?"bad":"ok");s.textContent=issues.length?issues.join(" · "):"Verified: all configured activity is dormant before 15.00s";renderAt(0)};
+$("#resetTime").onclick=()=>renderAt(0);
 const step=d=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(manualTime+d/30)};$("#stepBack").onclick=()=>step(-1);$("#stepForward").onclick=()=>step(1);
 $("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{project.background=rd.result;bg.src=rd.result;$("#empty").style.display="none"};rd.readAsDataURL(f)};
 [["speed","speedOut",v=>(+v).toFixed(1)+"×"],["width","widthOut",v=>v],["brightness","brightnessOut",v=>v+"%"],["packetsCount","packetsOut",v=>v],["startTime","startOut",v=>(+v).toFixed(1)+"s"],["duration","durationOut",v=>(+v).toFixed(1)+"s"],["wakeTime","wakeOut",v=>(+v).toFixed(1)+"s"],["sleepTime","sleepOut",v=>(+v).toFixed(1)+"s"]].forEach(([id,out,fmt])=>$("#"+id).oninput=e=>$("#"+out).value=fmt(e.target.value));
