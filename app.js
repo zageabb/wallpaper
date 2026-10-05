@@ -1,5 +1,5 @@
 const $=s=>document.querySelector(s),stage=$("#stage"),svg=$("#overlay"),bg=$("#bg"),group=$("#paths"),regionGroup=$("#regions"),particleGroup=$("#particles");
-let project={version:5,background:null,loopSeconds:15,routes:[],regions:[],pulses:[]},draft=[],playing=false,raf=0,start=0,regionMode=false,regionDraft=[],pulseMode=false,manualTime=0;
+let project={version:5,background:null,loopSeconds:15,routes:[],regions:[],pulses:[]},draft=[],playing=false,raf=0,start=0,regionMode=false,regionDraft=[],pulseMode=false,manualTime=0,editingRoute=null,dragPoint=null;
 const NS="http://www.w3.org/2000/svg", clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), safeId=()=>globalThis.crypto?.randomUUID?.()||`id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, STORAGE_KEY="wallpaper-animation-studio-v1";
 const normPoint=e=>{const r=svg.getBoundingClientRect();return [clamp((e.clientX-r.left)/r.width,0,1),clamp((e.clientY-r.top)/r.height,0,1)]};
 const svgPts=pts=>pts.map(([x,y])=>`${x*1000},${y*562.5}`).join(" ");
@@ -13,13 +13,14 @@ function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify({...proje
 function draw(){
  group.innerHTML="";regionGroup.innerHTML="";particleGroup.innerHTML="";
  project.routes.forEach((r,i)=>{
-  group.append(routePath(r,"route-bed",r.width*1.15));group.append(routePath(r,"flow-glow",r.width*3,0));group.append(routePath(r,"flow-core",Math.max(1,r.width*.38),0));
+  group.append(routePath(r,"route-bed"+(editingRoute===i?" editing":""),r.width*1.15));group.append(routePath(r,"flow-glow",r.width*3,0));group.append(routePath(r,"flow-core",Math.max(1,r.width*.38),0));
   for(let k=0;k<r.packets;k++){const c=el("circle",{r:Math.max(2,r.width*.65),fill:r.colour,class:"energy-packet",opacity:0});c.dataset.route=i;c.dataset.packet=k;particleGroup.append(c)}
+  if(editingRoute===i)r.points.forEach((p,k)=>{const h=el("circle",{cx:p[0]*1000,cy:p[1]*562.5,r:7,class:"route-handle"});h.dataset.route=i;h.dataset.point=k;particleGroup.append(h)})
  });
  project.regions.forEach((r,i)=>{const g=el("g",{"data-region":i});g.append(el("polygon",{points:svgPts(regionPoints(r)),class:"screen-region"}));regionGroup.append(g)});
  (project.pulses||[]).forEach((p,i)=>{const g=el("g",{"data-pulse":i});g.append(el("circle",{cx:p.point[0]*1000,cy:p.point[1]*562.5,r:5,class:"pulse-point"}));particleGroup.append(g)});
  $("#draft").setAttribute("points",svgPts(regionMode?regionDraft:draft));
- $("#routes").innerHTML=project.routes.map((r,i)=>`<div class="route"><i class="swatch" style="background:${r.colour}"></i><span>${r.name}<small>${r.startTime.toFixed(1)}s + ${r.duration.toFixed(1)}s · ${r.speed.toFixed(1)}× · ${r.packets} packets</small></span><button data-del="${i}">×</button></div>`).join("");
+ $("#routes").innerHTML=project.routes.map((r,i)=>`<div class="route"><i class="swatch" style="background:${r.colour}"></i><span>${r.name}<small>${r.startTime.toFixed(1)}s + ${r.duration.toFixed(1)}s · ${r.speed.toFixed(1)}× · ${r.packets} packets</small></span><button data-edit="${i}">${editingRoute===i?"Done":"Edit"}</button><button data-del="${i}">×</button></div>`).join("");
  $("#regionList").innerHTML=project.regions.map((r,i)=>{const w=regionWindow(r);return `<div class="region-item"><span>${r.type}<small>${r.wakeMode==="route"?"route arrival":"timeline"} · ${w[0].toFixed(1)}s–${w[1].toFixed(1)}s</small></span><button data-rdel="${i}">×</button></div>`}).join("");
  $("#pulseList").innerHTML=(project.pulses||[]).map((p,i)=>`<div class="region-item"><span>Pulse ${i+1}<small>${p.start.toFixed(1)}s–${p.end.toFixed(1)}s</small></span><button data-pdel="${i}">×</button></div>`).join("");
  $("#triggerRoute").innerHTML=`<option value="">None</option>`+project.routes.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
@@ -54,11 +55,15 @@ svg.addEventListener("dblclick",e=>{if(!regionMode){e.preventDefault();finish()}
 $("#finish").onclick=finish;$("#newRoute").onclick=()=>{draft=[];draw()};$("#undo").onclick=()=>{draft.pop();draw()};
 $("#regionMode").onclick=()=>{regionMode=true;pulseMode=false;regionDraft=[];draft=[];$("#regionMode").textContent="Screen corners 0/4…";$("#pulseMode").textContent="Add pulse point";draw()};$("#cancelRegion").onclick=()=>{regionMode=false;regionDraft=[];$("#regionMode").textContent="Add screen region";draw()};
 $("#preview").onclick=()=>{playing=!playing;stage.classList.toggle("playing",playing);$("#preview").textContent=playing?"Stop preview":"Preview";if(playing){start=0;raf=requestAnimationFrame(animate)}else cancelAnimationFrame(raf)};
-$("#routes").onclick=e=>{if(e.target.dataset.del!==undefined){const deleted=+e.target.dataset.del;const deletedRoute=project.routes[deleted];project.routes.splice(deleted,1);project.regions.forEach(r=>{if(r.wakeMode==="route"&&r.triggerRouteId===deletedRoute?.id){r.wakeMode="time";r.triggerRouteId=null}});draw()}};
+$("#routes").onclick=e=>{if(e.target.dataset.edit!==undefined){editingRoute=editingRoute===+e.target.dataset.edit?null:+e.target.dataset.edit;draw();return}if(e.target.dataset.del!==undefined){const deleted=+e.target.dataset.del;const deletedRoute=project.routes[deleted];project.routes.splice(deleted,1);project.regions.forEach(r=>{if(r.wakeMode==="route"&&r.triggerRouteId===deletedRoute?.id){r.wakeMode="time";r.triggerRouteId=null}});draw()}};
 $("#regionList").onclick=e=>{if(e.target.dataset.rdel!==undefined){project.regions.splice(+e.target.dataset.rdel,1);draw()}};
 $("#pulseMode").onclick=()=>{pulseMode=true;regionMode=false;regionDraft=[];draft=[];$("#pulseMode").textContent="Click location…";$("#regionMode").textContent="Add screen region";draw()};
 $("#cancelPulse").onclick=()=>{pulseMode=false;$("#pulseMode").textContent="Add pulse point";draw()};
 $("#pulseList").onclick=e=>{if(e.target.dataset.pdel!==undefined){project.pulses.splice(+e.target.dataset.pdel,1);draw()}};
+particleGroup.addEventListener("pointerdown",e=>{const h=e.target.closest(".route-handle");if(!h)return;e.preventDefault();dragPoint={route:+h.dataset.route,point:+h.dataset.point};svg.setPointerCapture?.(e.pointerId)});
+svg.addEventListener("pointermove",e=>{if(!dragPoint)return;project.routes[dragPoint.route].points[dragPoint.point]=normPoint(e);draw()});
+svg.addEventListener("pointerup",()=>{if(dragPoint){dragPoint=null;persist()}});
+particleGroup.addEventListener("dblclick",e=>{const h=e.target.closest(".route-handle");if(!h)return;e.preventDefault();e.stopPropagation();const r=project.routes[+h.dataset.route];if(r.points.length<=2){$("#loopStatus").className="status bad";$("#loopStatus").textContent="A route needs at least two points";return}r.points.splice(+h.dataset.point,1);draw()});
 $("#scrub").oninput=e=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(+e.target.value)};
 function loopIssues(){
  const issues=[];
