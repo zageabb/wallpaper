@@ -1,4 +1,5 @@
 name: CI
+# Trigger refresh: validate current main after connector-authored commits.
 
 on:
   workflow_dispatch:
