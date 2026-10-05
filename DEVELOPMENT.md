@@ -33,19 +33,19 @@ Evidence of completion:
 
 ### DEV-003 — Reactive scene overlays [IN PROGRESS]
 - [x] Region editor to register dormant screen/panel bounds.
-- Define pulse points by clicking the image.
-- AI/network node pulses.
+- [ ] Define standalone pulse points by clicking the image.
+- [x] AI/network region pulses.
 - [x] Dashboard/KPI overlay regions.
 - [x] Build active information entirely as overlays rather than relying on information baked into the base.
-- [x] Initial bar, line and numeric KPI renderers.\n- [ ] Area, donut and map-hotspot renderers.
+- [x] Initial bar, line and numeric KPI renderers.\n- [x] Area, donut and map-hotspot renderers.
 - [x] Per-overlay wake/sleep transitions.
-- Trigger overlays when a flow reaches a destination.
+- [x] Trigger overlays when a flow reaches a destination.
 - [x] Return configured overlays to dormant state before the loop boundary.
 
 ### DEV-004 — Timeline
 - [x] 15-second default loop.
 - Sequence editor for document → system → analytics → AI → return.
-- [x] Scrubber and pause.\n- [ ] Frame stepping and loop-boundary verification.
+- [x] Scrubber and pause.\n- [x] Frame stepping and loop-boundary verification.
 
 ### DEV-005 — Export
 - Browser recording to WebM.
