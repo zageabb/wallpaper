@@ -44,6 +44,14 @@
 <label>Sleep time <output id="sleepOut">12.0s</output><input id="sleepTime" type="range" min=".5" max="15" step=".5" value="12"></label>
 <label>Overlay colour<select id="regionColour"><option value="#00b7ff">Electric blue</option><option value="#ffb84a">Warm gold</option></select></label>
 <div id="regionList"></div>
+<hr><h3>Pulse points</h3>
+<div class="row"><button id="pulseMode">Add pulse point</button><button id="cancelPulse">Cancel</button></div>
+<p class="hint">Use pulse points for processors, AI nodes, junctions or other locations that should glow without a screen overlay.</p>
+<label>Pulse colour<select id="pulseColour"><option value="#00b7ff">Electric blue</option><option value="#ffb84a">Warm gold</option></select></label>
+<label>Start time <output id="pulseStartOut">2.0s</output><input id="pulseStart" type="range" min="0" max="14.5" step=".5" value="2"></label>
+<label>End time <output id="pulseEndOut">8.0s</output><input id="pulseEnd" type="range" min=".5" max="15" step=".5" value="8"></label>
+<label>Radius <output id="pulseRadiusOut">28</output><input id="pulseRadius" type="range" min="8" max="80" step="2" value="28"></label>
+<div id="pulseList"></div>
 <h3>Timeline</h3><input id="scrub" type="range" min="0" max="15" step=".01" value="0"><div class="timeline-readout"><span id="timeOut">0.00s</span><span>15.00s loop</span></div>
 <div class="row"><button id="save">Export JSON</button><label class="smallfile">Import JSON<input id="loadProject" type="file" accept=".json"></label></div>
 <p class="hint">Routes: click along a dormant circuit track and double-click to finish. Screen regions use four perspective corners. Preview adds energy without altering the master image.</p>
