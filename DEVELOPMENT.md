@@ -68,6 +68,17 @@ Evidence of completion:
 - [ ] Background dimming preview.
 - [ ] Presets for subtle Teams wallpaper animation.
 
+## NEXT — Route visibility and lock controls [PLANNED]
+Scope:
+- Allow each completed route to be independently hidden/shown without deleting it.
+- Allow a route to be locked so its control points cannot be accidentally moved or deleted while tracing other elements.
+- Preserve visibility and lock state in project JSON/autosave.
+Acceptance/evidence target:
+- Route list exposes visible/hidden and locked/unlocked controls.
+- Hidden routes and their packets/handles do not render in the editor/preview.
+- Locked routes can be selected/viewed but their control points cannot be dragged or deleted.
+- JSON round-trip preserves both states and CI is green.
+
 ## Current testing milestone
 The editor is approaching its first manual testing milestone. Before declaring it ready, complete the remaining high-value editor work needed to exercise the deterministic overlay model end-to-end:
 - [x] Standalone pulse-point editor.
