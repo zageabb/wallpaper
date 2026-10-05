@@ -36,7 +36,7 @@
 <div id="loopStatus" class="status">Loop not verified</div>
 <h3>Routes</h3><div id="routes"></div>
 <hr><h3>Dormant screen regions</h3>
-<div class="row"><button id="regionMode">Add screen region</button><button id="cancelRegion">Cancel</button></div>
+<div class="row"><button id="regionMode">Add screen region</button><button id="cancelRegion">Cancel</button></div><p class="hint">Perspective screen: click its four corners in order — top-left, top-right, bottom-right, bottom-left.</p>
 <label>Overlay type<select id="regionType"><option value="bars">Bar KPI</option><option value="line">Line graph</option><option value="number">Numeric KPI</option><option value="area">Area graph</option><option value="donut">Donut KPI</option><option value="map">Map hotspots</option><option value="ai">AI / network pulse</option></select></label>
 <label>Wake mode<select id="wakeMode"><option value="time">Timeline time</option><option value="route">When route arrives</option></select></label>
 <label>Trigger route<select id="triggerRoute"><option value="">None</option></select></label>
@@ -46,5 +46,5 @@
 <div id="regionList"></div>
 <h3>Timeline</h3><input id="scrub" type="range" min="0" max="15" step=".01" value="0"><div class="timeline-readout"><span id="timeOut">0.00s</span><span>15.00s loop</span></div>
 <div class="row"><button id="save">Export JSON</button><label class="smallfile">Import JSON<input id="loadProject" type="file" accept=".json"></label></div>
-<p class="hint">Click along a dormant circuit track. Double-click to finish. Preview adds energy without altering the master image.</p>
+<p class="hint">Routes: click along a dormant circuit track and double-click to finish. Screen regions use four perspective corners. Preview adds energy without altering the master image.</p>
 </aside></main><script src="app.js"></script></body></html>
