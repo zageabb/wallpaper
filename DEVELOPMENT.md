@@ -93,17 +93,17 @@ Acceptance/evidence:
 - Hidden-route rendering and route deletion handling were hardened during implementation.
 - Implementation commit `dcd173f`; GitHub Actions run `37379931921` completed successfully.
 
-## HOTFIX — Pulse-point interaction [PLANNED]
+## HOTFIX — Pulse-point interaction [COMPLETE]
 Reported behaviour: pulse points do not appear to work in the current editor.
 Scope:
 - Reproduce from source flow and fix pulse placement/rendering interaction before continuing background dimming.
 - Ensure a placed pulse marker remains addressable by the pulse renderer and visibly animates during its configured window.
 - Preserve route editing and pulse deletion behaviour.
-Acceptance/evidence target:
-- Add pulse → click stage → pulse appears in list and marker is visible.
-- Scrubbing/previewing through its active window shows deterministic expanding pulse rings.
-- Route particles/handles cannot corrupt pulse selection/rendering.
-- CI is green.
+Acceptance/evidence:
+- Pulse markers now have explicit visible fill/stroke and remain visible while dormant.
+- Pulse rendering resolves each pulse from its own `data-pulse` index instead of SVG child position, isolating it from route particles/handles.
+- Active pulses brighten and render deterministic expanding rings through their configured window.
+- Implementation commit `4a96d89`; GitHub Actions run `37381354650` completed successfully.
 
 ## NEXT — Background dimming preview [PLANNED]
 Scope:
