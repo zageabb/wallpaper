@@ -80,17 +80,29 @@ Acceptance/evidence:
 - Visibility/lock state is included in JSON/autosave, with safe defaults for older projects.
 - Implementation commit `41a5a22`; GitHub Actions run `37379154047` completed successfully.
 
-## NEXT — Route timing and speed semantics [PLANNED]
+## Route timing and speed semantics [COMPLETE]
 Scope:
 - Make the route Speed control visibly affect packet travel while keeping route-triggered screen wake-up causal.
 - Ensure every packet completes before the configured route arrival/end boundary.
 - Keep a dormant tail before the 15-second loop reset.
 - Clarify timing labels so users can predict when electricity reaches a destination.
+Acceptance/evidence:
+- Speed now changes deterministic route travel time and route-triggered overlay arrival.
+- Packet staggering is normalised so all packets complete by the route arrival boundary.
+- Loop verification uses speed-adjusted travel and preserves the dormant tail.
+- Hidden-route rendering and route deletion handling were hardened during implementation.
+- Implementation commit `dcd173f`; GitHub Actions run `37379931921` completed successfully.
+
+## NEXT — Background dimming preview [PLANNED]
+Scope:
+- Add an editor-only background dimming control to make routes, handles, regions and pulse points easier to trace over bright artwork.
+- Dimming must not alter the source image, project animation output or exported frames.
+- Allow quick return to normal brightness.
 Acceptance/evidence target:
-- Changing Speed produces an observable, deterministic change in flow travel.
-- All packets stay within the route's valid timing window and finish before dependent overlays wake.
-- Loop verification detects any timing that would cross the dormant boundary.
-- Existing project JSON remains compatible and CI is green.
+- Editor exposes a background dim amount with immediate visual feedback.
+- Preview/output rendering remains based on the unmodified source image.
+- Dimming is treated as an editor preference rather than animation content.
+- CI is green.
 
 ## Current testing milestone
 The editor is approaching its first manual testing milestone. Before declaring it ready, complete the remaining high-value editor work needed to exercise the deterministic overlay model end-to-end:
