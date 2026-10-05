@@ -14,10 +14,12 @@ function draw(){
  project.regions.forEach((r,i)=>{const [x,y,w,h]=r.box;const g=el("g",{"data-region":i});g.append(el("rect",{x:x*1000,y:y*562.5,width:w*1000,height:h*562.5,rx:4,class:"screen-region"}));regionGroup.append(g)});
  $("#draft").setAttribute("points",svgPts(draft));
  $("#routes").innerHTML=project.routes.map((r,i)=>`<div class="route"><i class="swatch" style="background:${r.colour}"></i><span>${r.name}<small>${r.startTime.toFixed(1)}s + ${r.duration.toFixed(1)}s · ${r.speed.toFixed(1)}× · ${r.packets} packets</small></span><button data-del="${i}">×</button></div>`).join("");
- $("#regionList").innerHTML=project.regions.map((r,i)=>{const w=regionWindow(r);return `<div class="region-item"><span>${r.type}<small>${r.wakeMode==="route"?"route arrival":"timeline"} · ${w[0].toFixed(1)}s–${w[1].toFixed(1)}s</small></span><button data-rdel="${i}">×</button></div>`}).join("");\n $("#triggerRoute").innerHTML=`<option value="">None</option>`+project.routes.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
+ $("#regionList").innerHTML=project.regions.map((r,i)=>{const w=regionWindow(r);return `<div class="region-item"><span>${r.type}<small>${r.wakeMode==="route"?"route arrival":"timeline"} · ${w[0].toFixed(1)}s–${w[1].toFixed(1)}s</small></span><button data-rdel="${i}">×</button></div>`}).join("");
+ $("#triggerRoute").innerHTML=`<option value="">None</option>`+project.routes.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
  renderAt(manualTime);
 }
-function regionWindow(r){if(r.wakeMode==="route"&&Number.isInteger(r.triggerRoute)){const route=project.routes[r.triggerRoute];if(route){const arrival=route.startTime+route.duration*.82;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(1,r.hold||3))]}}return [r.wake,r.sleep]}\nfunction activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
+function regionWindow(r){if(r.wakeMode==="route"&&Number.isInteger(r.triggerRoute)){const route=project.routes[r.triggerRoute];if(route){const arrival=route.startTime+route.duration*.82;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(1,r.hold||3))]}}return [r.wake,r.sleep]}
+function activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
 function renderRegion(g,r,t){
  const a=activity(t,r.wake,r.sleep),box=r.box,x=box[0]*1000,y=box[1]*562.5,w=box[2]*1000,h=box[3]*562.5;
  g.firstChild.setAttribute("class","screen-region"+(a>.05?" active":""));while(g.children.length>1)g.lastChild.remove();if(a<=0)return;
