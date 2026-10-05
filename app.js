@@ -21,7 +21,7 @@ function draw(){
 function regionWindow(r){if(r.wakeMode==="route"&&Number.isInteger(r.triggerRoute)){const route=project.routes[r.triggerRoute];if(route){const arrival=route.startTime+route.duration*.82;return [arrival,Math.min(project.loopSeconds-.25,arrival+Math.max(1,r.hold||3))]}}return [r.wake,r.sleep]}
 function activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
 function renderRegion(g,r,t){
- const a=activity(t,r.wake,r.sleep),box=r.box,x=box[0]*1000,y=box[1]*562.5,w=box[2]*1000,h=box[3]*562.5;
+ const [wake,sleep]=regionWindow(r),a=activity(t,wake,sleep),box=r.box,x=box[0]*1000,y=box[1]*562.5,w=box[2]*1000,h=box[3]*562.5;
  g.firstChild.setAttribute("class","screen-region"+(a>.05?" active":""));while(g.children.length>1)g.lastChild.remove();if(a<=0)return;
  const content=el("g",{class:"region-content",opacity:a}), colour=r.colour||"#00b7ff";
  if(r.type==="bars"){for(let i=0;i<5;i++){const bw=w*.1,gap=w*.06,bh=h*(.2+.55*((i*37+3)%10)/10);content.append(el("rect",{x:x+w*.12+i*(bw+gap),y:y+h*.82-bh,width:bw,height:bh,rx:2,fill:colour}))}}
@@ -40,13 +40,13 @@ function renderAt(t){
  [...regionGroup.children].forEach((g,i)=>renderRegion(g,project.regions[i],manualTime));
 }
 function animate(t){if(!playing)return;if(!start)start=t-manualTime*1000;renderAt(((t-start)/1000)%project.loopSeconds);raf=requestAnimationFrame(animate)}
-function finish(){if(draft.length<2)return;project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,startTime:+$("#startTime").value,duration:+$("#duration").value,points:[...draft]});draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()}
+function finish(){if(draft.length<2)return;const startTime=+$("#startTime").value,duration=Math.min(+$("#duration").value,Math.max(.5,project.loopSeconds-.25-startTime));project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,startTime,duration,points:[...draft]});draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()}
 svg.addEventListener("click",e=>{if(regionMode){const p=normPoint(e);if(!regionStart){regionStart=p;return}const x=Math.min(regionStart[0],p[0]),y=Math.min(regionStart[1],p[1]),w=Math.abs(p[0]-regionStart[0]),h=Math.abs(p[1]-regionStart[1]);if(w>.01&&h>.01)project.regions.push({type:$("#regionType").value,colour:$("#regionColour").value,wakeMode:$("#wakeMode").value,triggerRoute:$("#triggerRoute").value===""?null:+$("#triggerRoute").value,wake:+$("#wakeTime").value,sleep:+$("#sleepTime").value,hold:3,box:[x,y,w,h]});regionStart=null;regionMode=false;$("#regionMode").textContent="Add screen region";draw();return}draft.push(normPoint(e));draw()});
 svg.addEventListener("dblclick",e=>{if(!regionMode){e.preventDefault();finish()}});
 $("#finish").onclick=finish;$("#newRoute").onclick=()=>{draft=[];draw()};$("#undo").onclick=()=>{draft.pop();draw()};
 $("#regionMode").onclick=()=>{regionMode=true;regionStart=null;draft=[];$("#regionMode").textContent="Click 2 corners…"};$("#cancelRegion").onclick=()=>{regionMode=false;regionStart=null;$("#regionMode").textContent="Add screen region"};
 $("#preview").onclick=()=>{playing=!playing;stage.classList.toggle("playing",playing);$("#preview").textContent=playing?"Stop preview":"Preview";if(playing){start=0;raf=requestAnimationFrame(animate)}else cancelAnimationFrame(raf)};
-$("#routes").onclick=e=>{if(e.target.dataset.del!==undefined){project.routes.splice(+e.target.dataset.del,1);draw()}};
+$("#routes").onclick=e=>{if(e.target.dataset.del!==undefined){const deleted=+e.target.dataset.del;project.routes.splice(deleted,1);project.regions.forEach(r=>{if(r.wakeMode==="route"){if(r.triggerRoute===deleted){r.wakeMode="time";r.triggerRoute=null}else if(r.triggerRoute>deleted)r.triggerRoute--}});draw()}};
 $("#regionList").onclick=e=>{if(e.target.dataset.rdel!==undefined){project.regions.splice(+e.target.dataset.rdel,1);draw()}};
 $("#scrub").oninput=e=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(+e.target.value)};
 function loopIssues(){
