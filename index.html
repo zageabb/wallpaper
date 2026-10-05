@@ -36,6 +36,8 @@
 <hr><h3>Dormant screen regions</h3>
 <div class="row"><button id="regionMode">Add screen region</button><button id="cancelRegion">Cancel</button></div>
 <label>Overlay type<select id="regionType"><option value="bars">Bar KPI</option><option value="line">Line graph</option><option value="number">Numeric KPI</option><option value="area">Area graph</option><option value="donut">Donut KPI</option><option value="map">Map hotspots</option><option value="ai">AI / network pulse</option></select></label>
+<label>Wake mode<select id="wakeMode"><option value="time">Timeline time</option><option value="route">When route arrives</option></select></label>
+<label>Trigger route<select id="triggerRoute"><option value="">None</option></select></label>
 <label>Wake time <output id="wakeOut">5.0s</output><input id="wakeTime" type="range" min="0" max="14.5" step=".5" value="5"></label>
 <label>Sleep time <output id="sleepOut">12.0s</output><input id="sleepTime" type="range" min=".5" max="15" step=".5" value="12"></label>
 <label>Overlay colour<select id="regionColour"><option value="#00b7ff">Electric blue</option><option value="#ffb84a">Warm gold</option></select></label>
