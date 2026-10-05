@@ -14,7 +14,7 @@
  <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter>
  <filter id="hotGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
-<g id="paths"></g><g id="particles"></g><polyline id="draft" fill="none"/>
+<g id="paths"></g><g id="regions"></g><g id="particles"></g><polyline id="draft" fill="none"/>
 </svg>
 <div id="empty">Load the dormant master wallpaper to begin</div>
 </div></section>
@@ -27,9 +27,18 @@
 <label>Width <output id="widthOut">5</output><input id="width" type="range" min="1" max="12" step="1" value="5"></label>
 <label>Brightness <output id="brightnessOut">80%</output><input id="brightness" type="range" min="20" max="100" step="5" value="80"></label>
 <label>Packets <output id="packetsOut">4</output><input id="packetsCount" type="range" min="1" max="10" step="1" value="4"></label>
+<label>Start time <output id="startOut">0.0s</output><input id="startTime" type="range" min="0" max="14.5" step=".5" value="0"></label>
+<label>Active duration <output id="durationOut">6.0s</output><input id="duration" type="range" min="1" max="15" step=".5" value="6"></label>
 <label class="check"><input id="reverse" type="checkbox"> Reverse direction</label>
 <div class="row"><button id="finish">Finish route</button><button id="preview">Preview</button></div>
 <h3>Routes</h3><div id="routes"></div>
+<hr><h3>Dormant screen regions</h3>
+<div class="row"><button id="regionMode">Add screen region</button><button id="cancelRegion">Cancel</button></div>
+<label>Overlay type<select id="regionType"><option value="bars">Bar KPI</option><option value="line">Line graph</option><option value="number">Numeric KPI</option></select></label>
+<label>Wake time <output id="wakeOut">5.0s</output><input id="wakeTime" type="range" min="0" max="14.5" step=".5" value="5"></label>
+<label>Sleep time <output id="sleepOut">12.0s</output><input id="sleepTime" type="range" min=".5" max="15" step=".5" value="12"></label>
+<div id="regionList"></div>
+<h3>Timeline</h3><input id="scrub" type="range" min="0" max="15" step=".01" value="0"><div class="timeline-readout"><span id="timeOut">0.00s</span><span>15.00s loop</span></div>
 <div class="row"><button id="save">Export JSON</button><label class="smallfile">Import JSON<input id="loadProject" type="file" accept=".json"></label></div>
 <p class="hint">Click along a dormant circuit track. Double-click to finish. Preview adds energy without altering the master image.</p>
 </aside></main><script src="app.js"></script></body></html>
