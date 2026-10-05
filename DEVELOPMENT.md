@@ -64,26 +64,39 @@ Evidence of completion:
 ### DEV-006 — Usability
 - [x] Project JSON import/export.
 - [x] Autosave in browser storage.
-- [ ] Route visibility/lock controls.
+- [x] Route visibility/lock controls.
 - [ ] Background dimming preview.
 - [ ] Presets for subtle Teams wallpaper animation.
 
-## NEXT — Route visibility and lock controls [PLANNED]
+## Route visibility and lock controls [COMPLETE]
 Scope:
 - Allow each completed route to be independently hidden/shown without deleting it.
 - Allow a route to be locked so its control points cannot be accidentally moved or deleted while tracing other elements.
 - Preserve visibility and lock state in project JSON/autosave.
-Acceptance/evidence target:
+Acceptance/evidence:
 - Route list exposes visible/hidden and locked/unlocked controls.
 - Hidden routes and their packets/handles do not render in the editor/preview.
-- Locked routes can be selected/viewed but their control points cannot be dragged or deleted.
-- JSON round-trip preserves both states and CI is green.
+- Locked routes cannot enter point editing and their control points cannot be dragged or deleted.
+- Visibility/lock state is included in JSON/autosave, with safe defaults for older projects.
+- Implementation commit `41a5a22`; GitHub Actions run `37379154047` completed successfully.
+
+## NEXT — Route timing and speed semantics [PLANNED]
+Scope:
+- Make the route Speed control visibly affect packet travel while keeping route-triggered screen wake-up causal.
+- Ensure every packet completes before the configured route arrival/end boundary.
+- Keep a dormant tail before the 15-second loop reset.
+- Clarify timing labels so users can predict when electricity reaches a destination.
+Acceptance/evidence target:
+- Changing Speed produces an observable, deterministic change in flow travel.
+- All packets stay within the route's valid timing window and finish before dependent overlays wake.
+- Loop verification detects any timing that would cross the dormant boundary.
+- Existing project JSON remains compatible and CI is green.
 
 ## Current testing milestone
 The editor is approaching its first manual testing milestone. Before declaring it ready, complete the remaining high-value editor work needed to exercise the deterministic overlay model end-to-end:
 - [x] Standalone pulse-point editor.
 - [x] Autosave/recovery for local projects.
-- [ ] Route visibility/lock controls if required for practical tracing.
+- [x] Route visibility/lock controls for practical tracing.
 - [ ] Manual browser test of perspective screens, route-triggered wake-up, scrub/frame-step, loop verification and JSON round-trip.
 - [ ] Record first-test instructions and known limitations; video export is not required for the first interactive test milestone.
 
