@@ -23,29 +23,36 @@ Evidence of completion:
 - Routes can be blue or gold, renamed, undone, deleted and saved to JSON.
 - Preview mode animates flow without changing the background.
 
-### DEV-002 — Flow rendering [IN PROGRESS]
+### DEV-002 — Flow rendering [COMPLETE]
 - [x] Multi-pass glow around paths.
 - [x] Moving light packets/particles rather than only dashed lines.
 - [x] Direction, speed, width and brightness controls.
 - [x] Multiple independently timed paths.
 - [x] Explicit route phase/start-time control.
 - [x] Seamless deterministic 15-second preview loop.
+- [x] One-way causal packet travel from route start to destination.
+- [x] Boundary-safe route timing with dormant tail before loop reset.
 
 ### DEV-003 — Reactive scene overlays [IN PROGRESS]
-- [x] Region editor to register dormant screen/panel bounds.
+- [x] Four-corner perspective region editor to register dormant screen/panel surfaces.
 - [ ] Define standalone pulse points by clicking the image.
 - [x] AI/network region pulses.
 - [x] Dashboard/KPI overlay regions.
 - [x] Build active information entirely as overlays rather than relying on information baked into the base.
-- [x] Initial bar, line and numeric KPI renderers.\n- [x] Area, donut and map-hotspot renderers.
+- [x] Initial bar, line and numeric KPI renderers.
+- [x] Area, donut and map-hotspot renderers.
+- [x] Perspective-project KPI/graph overlays into four-corner screen geometry.
 - [x] Per-overlay wake/sleep transitions.
 - [x] Trigger overlays when a flow reaches a destination.
+- [x] Stable route IDs prevent linked screen regions shifting when routes are deleted.
 - [x] Return configured overlays to dormant state before the loop boundary.
 
 ### DEV-004 — Timeline
 - [x] 15-second default loop.
 - Sequence editor for document → system → analytics → AI → return.
-- [x] Scrubber and pause.\n- [x] Frame stepping and loop-boundary verification.
+- [x] Scrubber and pause.
+- [x] Frame stepping and loop-boundary verification.
+- [x] Validate four-corner regions, trigger-route references and wake/sleep windows.
 
 ### DEV-005 — Export
 - Browser recording to WebM.
@@ -59,6 +66,14 @@ Evidence of completion:
 - Route visibility/lock controls.
 - Background dimming preview.
 - Presets for subtle Teams wallpaper animation.
+
+## Current testing milestone
+The editor is approaching its first manual testing milestone. Before declaring it ready, complete the remaining high-value editor work needed to exercise the deterministic overlay model end-to-end:
+- [ ] Standalone pulse-point editor.
+- [ ] Autosave/recovery for local projects.
+- [ ] Route visibility/lock controls if required for practical tracing.
+- [ ] Manual browser test of perspective screens, route-triggered wake-up, scrub/frame-step, loop verification and JSON round-trip.
+- [ ] Record first-test instructions and known limitations; video export is not required for the first interactive test milestone.
 
 ## Base artwork requirement
 Use a deliberately dormant/static source scene. The base should contain the physical environment and display hardware only: buildings, circuitry, screen/panel surfaces, processor structures and normal low-level ambient illumination.
@@ -78,3 +93,10 @@ All active content is added progressively as deterministic overlays. This allows
 
 ## Acceptance criteria
 A successful output has no camera movement, no geometry morphing, no AI-redrawn frames and no background flicker. The base contains no active KPI/graph/data state. Only intentionally configured overlays provide electricity, information, KPI/graph activity, particles and AI/network activity.
+
+
+## Recent evidence
+- Perspective four-corner screen regions implemented and projected overlays follow panel geometry.
+- Causal route arrival and loop-boundary timing implemented.
+- Stable route/region IDs and legacy JSON migration implemented.
+- Validation hardening implemented in `500a8b3`; GitHub Actions run `37320210773` completed successfully.
