@@ -1,51 +1,50 @@
-const $=s=>document.querySelector(s),stage=$("#stage"),svg=$("#overlay"),bg=$("#bg"),group=$("#paths"),particleGroup=$("#particles");
-let project={version:2,background:null,loopSeconds:15,routes:[]},draft=[],playing=false,raf=0,start=0;
-const NS="http://www.w3.org/2000/svg";
-const normPoint=e=>{const r=svg.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
+const $=s=>document.querySelector(s),stage=$("#stage"),svg=$("#overlay"),bg=$("#bg"),group=$("#paths"),regionGroup=$("#regions"),particleGroup=$("#particles");
+let project={version:3,background:null,loopSeconds:15,routes:[],regions:[]},draft=[],playing=false,raf=0,start=0,regionMode=false,regionStart=null,manualTime=0;
+const NS="http://www.w3.org/2000/svg", clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const normPoint=e=>{const r=svg.getBoundingClientRect();return [clamp((e.clientX-r.left)/r.width,0,1),clamp((e.clientY-r.top)/r.height,0,1)]};
 const svgPts=pts=>pts.map(([x,y])=>`${x*1000},${y*562.5}`).join(" ");
 const el=(tag,attrs={})=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));return n};
 function routePath(r,cls,width,opacity=1){return el("polyline",{points:svgPts(r.points),class:cls,stroke:r.colour,"stroke-width":width,opacity})}
 function draw(){
- group.innerHTML="";particleGroup.innerHTML="";
+ group.innerHTML="";regionGroup.innerHTML="";particleGroup.innerHTML="";
  project.routes.forEach((r,i)=>{
-  group.append(routePath(r,"route-bed",r.width*1.15));
-  group.append(routePath(r,"flow-glow",r.width*3,0));
-  group.append(routePath(r,"flow-core",Math.max(1,r.width*.38),0));
+  group.append(routePath(r,"route-bed",r.width*1.15));group.append(routePath(r,"flow-glow",r.width*3,0));group.append(routePath(r,"flow-core",Math.max(1,r.width*.38),0));
   for(let k=0;k<r.packets;k++){const c=el("circle",{r:Math.max(2,r.width*.65),fill:r.colour,class:"energy-packet",opacity:0});c.dataset.route=i;c.dataset.packet=k;particleGroup.append(c)}
  });
+ project.regions.forEach((r,i)=>{const [x,y,w,h]=r.box;const g=el("g",{"data-region":i});g.append(el("rect",{x:x*1000,y:y*562.5,width:w*1000,height:h*562.5,rx:4,class:"screen-region"}));regionGroup.append(g)});
  $("#draft").setAttribute("points",svgPts(draft));
- $("#routes").innerHTML=project.routes.map((r,i)=>`<div class="route"><i class="swatch" style="background:${r.colour}"></i><span>${r.name}<small>${r.speed.toFixed(1)}× · ${r.packets} packets · ${r.brightness}%${r.reverse?" · reverse":""}</small></span><button data-del="${i}">×</button></div>`).join("");
+ $("#routes").innerHTML=project.routes.map((r,i)=>`<div class="route"><i class="swatch" style="background:${r.colour}"></i><span>${r.name}<small>${r.startTime.toFixed(1)}s + ${r.duration.toFixed(1)}s · ${r.speed.toFixed(1)}× · ${r.packets} packets</small></span><button data-del="${i}">×</button></div>`).join("");
+ $("#regionList").innerHTML=project.regions.map((r,i)=>`<div class="region-item"><span>${r.type}<small>wake ${r.wake.toFixed(1)}s · sleep ${r.sleep.toFixed(1)}s</small></span><button data-rdel="${i}">×</button></div>`).join("");
+ renderAt(manualTime);
 }
-function animate(t){
- if(!playing)return;
- if(!start)start=t;
- const elapsed=(t-start)/1000;
- [...group.children].forEach((node,idx)=>{
-   const r=project.routes[Math.floor(idx/3)],kind=idx%3;
-   if(kind===1)node.setAttribute("opacity",.12*(r.brightness/100));
-   if(kind===2)node.setAttribute("opacity",.72*(r.brightness/100));
- });
- [...particleGroup.children].forEach(c=>{
-  const r=project.routes[+c.dataset.route],path=group.children[(+c.dataset.route)*3+2],len=path.getTotalLength();
-  const phase=+c.dataset.packet/r.packets;
-  let p=((elapsed*r.speed/6)+phase)%1;if(r.reverse)p=1-p;
-  const q=path.getPointAtLength(p*len);c.setAttribute("cx",q.x);c.setAttribute("cy",q.y);
-  const envelope=Math.min(1,Math.sin(Math.PI*p)*2.2);
-  c.setAttribute("opacity",envelope*(r.brightness/100));
- });
- raf=requestAnimationFrame(animate);
+function activity(t,on,off){if(off<=on)return 0;if(t<on||t>off)return 0;const fade=Math.min(.5,(off-on)/3);return Math.min(1,(t-on)/fade,(off-t)/fade)}
+function renderRegion(g,r,t){
+ const a=activity(t,r.wake,r.sleep),box=r.box,x=box[0]*1000,y=box[1]*562.5,w=box[2]*1000,h=box[3]*562.5;
+ g.firstChild.setAttribute("class","screen-region"+(a>.05?" active":""));while(g.children.length>1)g.lastChild.remove();if(a<=0)return;
+ const content=el("g",{class:"region-content",opacity:a});
+ if(r.type==="bars"){for(let i=0;i<5;i++){const bw=w*.1,gap=w*.06,bh=h*(.2+.55*((i*37+3)%10)/10);content.append(el("rect",{x:x+w*.12+i*(bw+gap),y:y+h*.82-bh,width:bw,height:bh,rx:2,fill:"#00b7ff"}))}}
+ else if(r.type==="line"){const pts=[];for(let i=0;i<7;i++)pts.push([x+w*(.08+i*.14),y+h*(.7-.45*((i*29+2)%10)/10)]);content.append(el("polyline",{points:pts.map(p=>p.join(",")).join(" "),fill:"none",stroke:"#00b7ff","stroke-width":2}));}
+ else{const tx=el("text",{x:x+w/2,y:y+h*.62,"text-anchor":"middle",fill:"#e8f5ff","font-size":Math.max(12,h*.35),"font-family":"system-ui"});tx.textContent=Math.round(72+18*Math.sin((t-r.wake)*1.3))+"%";content.append(tx)}
+ g.append(content);
 }
-function finish(){
- if(draft.length<2)return;
- project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,points:[...draft]});
- draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()
+function renderAt(t){
+ manualTime=((t%project.loopSeconds)+project.loopSeconds)%project.loopSeconds;$("#scrub").value=manualTime;$("#timeOut").textContent=manualTime.toFixed(2)+"s";
+ [...group.children].forEach((node,idx)=>{const r=project.routes[Math.floor(idx/3)],kind=idx%3,a=activity(manualTime,r.startTime,r.startTime+r.duration);if(kind===1)node.setAttribute("opacity",a*.12*(r.brightness/100));if(kind===2)node.setAttribute("opacity",a*.72*(r.brightness/100))});
+ [...particleGroup.children].forEach(c=>{const r=project.routes[+c.dataset.route],a=activity(manualTime,r.startTime,r.startTime+r.duration),path=group.children[(+c.dataset.route)*3+2],len=path.getTotalLength(),phase=+c.dataset.packet/r.packets;let local=Math.max(0,manualTime-r.startTime),p=((local*r.speed/6)+phase)%1;if(r.reverse)p=1-p;const q=path.getPointAtLength(p*len);c.setAttribute("cx",q.x);c.setAttribute("cy",q.y);c.setAttribute("opacity",a*(r.brightness/100))});
+ [...regionGroup.children].forEach((g,i)=>renderRegion(g,project.regions[i],manualTime));
 }
-svg.addEventListener("click",e=>{draft.push(normPoint(e));draw()});svg.addEventListener("dblclick",e=>{e.preventDefault();finish()});
+function animate(t){if(!playing)return;if(!start)start=t-manualTime*1000;renderAt(((t-start)/1000)%project.loopSeconds);raf=requestAnimationFrame(animate)}
+function finish(){if(draft.length<2)return;project.routes.push({name:$("#name").value||`Flow ${project.routes.length+1}`,colour:$("#colour").value,speed:+$("#speed").value,width:+$("#width").value,brightness:+$("#brightness").value,packets:+$("#packetsCount").value,reverse:$("#reverse").checked,startTime:+$("#startTime").value,duration:+$("#duration").value,points:[...draft]});draft=[];$("#name").value=`Flow ${project.routes.length+1}`;draw()}
+svg.addEventListener("click",e=>{if(regionMode){const p=normPoint(e);if(!regionStart){regionStart=p;return}const x=Math.min(regionStart[0],p[0]),y=Math.min(regionStart[1],p[1]),w=Math.abs(p[0]-regionStart[0]),h=Math.abs(p[1]-regionStart[1]);if(w>.01&&h>.01)project.regions.push({type:$("#regionType").value,wake:+$("#wakeTime").value,sleep:+$("#sleepTime").value,box:[x,y,w,h]});regionStart=null;regionMode=false;$("#regionMode").textContent="Add screen region";draw();return}draft.push(normPoint(e));draw()});
+svg.addEventListener("dblclick",e=>{if(!regionMode){e.preventDefault();finish()}});
 $("#finish").onclick=finish;$("#newRoute").onclick=()=>{draft=[];draw()};$("#undo").onclick=()=>{draft.pop();draw()};
-$("#preview").onclick=()=>{playing=!playing;stage.classList.toggle("playing",playing);$("#preview").textContent=playing?"Stop preview":"Preview";if(playing){start=0;raf=requestAnimationFrame(animate)}else{cancelAnimationFrame(raf);draw()}};
+$("#regionMode").onclick=()=>{regionMode=true;regionStart=null;draft=[];$("#regionMode").textContent="Click 2 corners…"};$("#cancelRegion").onclick=()=>{regionMode=false;regionStart=null;$("#regionMode").textContent="Add screen region"};
+$("#preview").onclick=()=>{playing=!playing;stage.classList.toggle("playing",playing);$("#preview").textContent=playing?"Stop preview":"Preview";if(playing){start=0;raf=requestAnimationFrame(animate)}else cancelAnimationFrame(raf)};
 $("#routes").onclick=e=>{if(e.target.dataset.del!==undefined){project.routes.splice(+e.target.dataset.del,1);draw()}};
+$("#regionList").onclick=e=>{if(e.target.dataset.rdel!==undefined){project.regions.splice(+e.target.dataset.rdel,1);draw()}};
+$("#scrub").oninput=e=>{if(playing){playing=false;cancelAnimationFrame(raf);$("#preview").textContent="Preview"}renderAt(+e.target.value)};
 $("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{project.background=rd.result;bg.src=rd.result;$("#empty").style.display="none"};rd.readAsDataURL(f)};
-[["speed","speedOut",v=>(+v).toFixed(1)+"×"],["width","widthOut",v=>v],["brightness","brightnessOut",v=>v+"%"],["packetsCount","packetsOut",v=>v]].forEach(([id,out,fmt])=>$("#"+id).oninput=e=>$("#"+out).value=fmt(e.target.value));
+[["speed","speedOut",v=>(+v).toFixed(1)+"×"],["width","widthOut",v=>v],["brightness","brightnessOut",v=>v+"%"],["packetsCount","packetsOut",v=>v],["startTime","startOut",v=>(+v).toFixed(1)+"s"],["duration","durationOut",v=>(+v).toFixed(1)+"s"],["wakeTime","wakeOut",v=>(+v).toFixed(1)+"s"],["sleepTime","sleepOut",v=>(+v).toFixed(1)+"s"]].forEach(([id,out,fmt])=>$("#"+id).oninput=e=>$("#"+out).value=fmt(e.target.value));
 $("#save").onclick=()=>{const clean={...project,background:null};const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(clean,null,2)],{type:"application/json"}));a.download="wallpaper-project.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-$("#loadProject").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const p=JSON.parse(rd.result);project={...project,...p,background:project.background,routes:(p.routes||[]).map(r=>({brightness:80,packets:4,reverse:false,...r}))};draw()};rd.readAsText(f)};
+$("#loadProject").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const p=JSON.parse(rd.result);project={...project,...p,background:project.background,routes:(p.routes||[]).map(r=>({brightness:80,packets:4,reverse:false,startTime:0,duration:6,...r})),regions:p.regions||[]};draw()};rd.readAsText(f)};
 draw();
