@@ -31,11 +31,15 @@ Evidence of completion:
 - Seamless deterministic loop.
 
 ### DEV-003 — Reactive scene overlays
+- Region editor to register dormant screen/panel bounds.
 - Define pulse points by clicking the image.
 - AI/network node pulses.
 - Dashboard/KPI overlay regions.
-- Simple bar, line and donut animation.
+- Build active information entirely as overlays rather than relying on information baked into the base.
+- Bar, line, area, donut, numeric KPI and map-hotspot renderers.
+- Per-overlay opacity/brightness and wake/sleep transitions.
 - Trigger overlays when a flow reaches a destination.
+- Return overlays to the exact dormant state before the loop boundary.
 
 ### DEV-004 — Timeline
 - 15-second default loop.
@@ -56,7 +60,20 @@ Evidence of completion:
 - Presets for subtle Teams wallpaper animation.
 
 ## Base artwork requirement
-Prefer a dormant/static source image with the same visual scene but minimal bright electricity/highlight trails. Normal environmental illumination remains. Animation overlays restore the bright blue/gold flows, making masking and alignment substantially easier.
+Use a deliberately dormant/static source scene. The base should contain the physical environment and display hardware only: buildings, circuitry, screen/panel surfaces, processor structures and normal low-level ambient illumination.
+
+The base should NOT bake in active information or activity:
+- no bright travelling electricity or highlighted data-flow trails;
+- no populated KPI values;
+- no active bar/line/area graphs;
+- no illuminated donut/pie values;
+- no active map hotspots or data markers;
+- no strongly illuminated AI/network nodes;
+- no transient documents/data particles intended to move.
+
+Dashboard and KPI screens should remain present as believable dark/inactive glass or low-level UI frames, so animated detail can be registered precisely over them.
+
+All active content is added progressively as deterministic overlays. This allows electricity to reach a system and then cause its screen, KPI, graph or AI node to wake up, update and later return to dormant state.
 
 ## Acceptance criteria
-A successful output has no camera movement, no geometry morphing, no AI-redrawn frames and no background flicker. Only intentionally configured overlays move.
+A successful output has no camera movement, no geometry morphing, no AI-redrawn frames and no background flicker. The base contains no active KPI/graph/data state. Only intentionally configured overlays provide electricity, information, KPI/graph activity, particles and AI/network activity.
