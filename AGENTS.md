@@ -5,6 +5,8 @@ Develop Wallpaper Animation Studio as a deterministic overlay animation tool.
 
 ## Non-negotiable product rules
 - Never animate, regenerate or transform the background image during playback.
+- Treat the base image as a dormant physical scene: display hardware may exist, but active KPI values, graphs, map markers, data-flow highlights and AI activity belong in overlays.
+- Never solve an overlay feature by baking its active state back into the base artwork.
 - Prefer SVG for user-authored geometry and Canvas/CSS for effects.
 - Coordinates must be stored normalized (0..1) so projects survive resolution changes.
 - Preview and export must use the same animation timing model.
