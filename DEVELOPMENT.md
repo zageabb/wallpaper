@@ -15,6 +15,12 @@ The base image is immutable. Motion is produced by deterministic overlays so bui
 6. Export pipeline for WebM/MP4/GIF.
 
 ## Development stages
+### OPS-UDA-001 — UDA reverse-proxy subpath compatibility [AWAITING REVIEW]
+- Keep the existing direct LAN/root launch unchanged.
+- Verify that browser assets resolve beneath `/apps/wallpaper/` after Caddy strips the trusted application prefix.
+- Add an automated regression test and record CI/PR evidence before marking complete.
+- Evidence: `tests/test_uda_subpath.py` verifies both prefixed public and direct LAN asset resolution; 2 migration tests pass and the existing CI validation commands pass locally.
+
 ### DEV-001 — Interactive base editor [COMPLETE]
 Evidence of completion:
 - Browser app loads without build tooling.
