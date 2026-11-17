@@ -1,0 +1,28 @@
+schema_version: 1
+application:
+  name: wallpaper
+  display_name: Wallpaper Animation Studio
+  group: Personal
+source:
+  branch: main
+runtime:
+  type: static
+  working_dir: .
+build:
+  working_dir: .
+  commands: []
+service:
+  type: static
+  port: 5087
+  health_path: /
+proxy:
+  enabled: true
+  path: /apps/wallpaper/
+  authentication: uda
+environment:
+  required: []
+deployment:
+  auto_update: true
+  rollback: true
+  github_reporting: false
+
